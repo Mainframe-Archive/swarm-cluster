@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "swarm.fullname" . }}
+  labels:
+    app: {{ include "swarm.name" . }}
+    app.kubernetes.io/name: {{ include "swarm.name" . }}
+    helm.sh/chart: {{ include "swarm.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.gateway.port }}
+      name: gateway
+    - port: {{ .Values.socket.port }}
+      name: socket
+  selector:
+    app.kubernetes.io/name: {{ include "swarm.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  containers:
+  - name: {{ include "swarm.name" . }}
+    command:
+    - export PASSWORD="simple123"
+    - sh
+    - -ac
+    - >
+      source /env/swarm.env;
+    {{- if .Values.swarm.metricsEnabled }}
+      export BZZKEY=$(sh /run.sh print-keys | grep bzzkey=    | cut -d '=' -f2 | cut -c1-7) &&
+      export PUBKEY=$(sh /run.sh print-keys | grep publicKey= | cut -d '=' -f2 | cut -c1-10) &&
+    {{- end }}
+      env PASSWORD=1234
+      /run.sh
+      --ens-api={{ .Values.swarm.config.ens_api }}
+      --port=$NODEPORT
+      --bzzport=8500
+      --store.size={{ .Values.swarm.config.storesize }}
+      --corsdomain=*
+      --httpaddr=0.0.0.0
+      --wsport=8546
+      --verbosity={{ .Values.swarm.config.verbosity }}
+      --maxpeers={{ .Values.swarm.config.maxpeers }}
+      --ipcpath=bzzd.ipc
+      {{- if .Values.swarm.config.debug }}
+      --debug
+      {{- end }}
+      --bzznetworkid={{ .Values.swarm.config.bzznetworkid }}
+      --nat=extip:$PUBLIC_IP
+      {{- if gt (len .Values.swarm.config.bootnodes) 0 }}
+      --bootnodes={{- range $i, $b := .Values.swarm.config.bootnodes }}{{if ne $i 0}},{{end}}{{ $b }}{{- end }}
+      {{- end }}
+      {{- if .Values.swarm.metricsEnabled }}
+      --metrics
+      --metrics.influxdb.export
+      --metrics.influxdb.endpoint=http://{{ .Values.metrics.endpoint }}
+      --metrics.influxdb.database={{ .Values.metrics.database }}
+      --metrics.influxdb.tags="host=$(POD_NAME),bzzkey=$BZZKEY,pubkey=$PUBKEY"
+      {{- end }}
+      {{- if .Values.swarm.tracingEnabled }}
+      --tracing
+      --tracing.endpoint={{ .Values.tracing.endpoint }}
+      --tracing.svc=$(POD_NAME)
+      {{- end }}
+      {{- if .Values.swarm.profilingEnabled }}
+      --pprof
+      --pprofaddr=0.0.0.0
+      --pprofport=6060
+      {{- end }}
+{{- range $i, $flag := .Values.swarm.config.extraFlags }}
+          {{ $flag }}
+{{- end }}
+    # args: ["--debug", "--metrics", "--metrics.influxdb.export", "--metrics.influxdb.endpoint '{{ .Values.metrics.endpoint }}'", "--metrics.influxdb.database '{{ .Values.metrics.database }}'", "--metrics.influxdb.host.tag '{{ .Values.metrics.tag }}'", "--verbosity 4", "--tracing", "--tracing.endpoint {{ .Values.tracing.endpoint }}", "--tracing.svc swarm"]
+    envFrom:
+      secretRef:
+        name: {{ template "swarm.fullname" . }}
+        

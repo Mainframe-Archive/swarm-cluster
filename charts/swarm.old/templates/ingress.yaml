@@ -1,0 +1,20 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "swarm.fullname" . -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    app.kubernetes.io/name: {{ include "swarm.name" . }}
+    helm.sh/chart: {{ include "swarm.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  backend:
+    serviceName: {{ .Values.ingress.serviceName }}
+    servicePort: {{ .Values.ingress.servicePort }}
+{{- end }}

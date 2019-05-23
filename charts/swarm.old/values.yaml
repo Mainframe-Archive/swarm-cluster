@@ -1,0 +1,51 @@
+# Default values for swarm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 6
+
+image:
+  repository: ethdevops/swarm
+  tag: v0.3.8
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+
+metrics:
+  endpoint: "http://swarm-metrics-influxdb.swarm.svc.cluster.local:8086"
+  database: "metrics"
+
+tracing:
+  endpoint: "http://jaeger-agent.swarm.svc.cluster.local:6831"
+
+gateway:
+  port: 8500
+
+socket:
+  port: 8546
+
+ingress:
+  enabled: true
+  annotations: 
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  serviceName: swarm-cluster
+  servicePort: 80
+
+swarm:
+  secrets:
+     # Used to setup a sample Ethereum account in the data directory.
+     # If a data directory is mounted with a volume, the first Ethereum account from it
+     # is loaded, and Swarm will try to decrypt it non-interactively with this password.
+    password: simple123
+  metricsEnabled: true
+  tracingEnabled: true
+  profilingEnabled: true
+  config:
+    debug: true
+    ens-api: https://mainnet.infura.io/v3/c6d657b92fd7490384b4509135038239
+    bzznetworkid: 3
+    bootnodes: []

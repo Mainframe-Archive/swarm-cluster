@@ -86,43 +86,13 @@ resource "aws_security_group_rule" "swarm-node-ingress-cluster" {
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "swarm-node-ingress-gateway" {
-  description              = "Allow node to communicate with each other"
+resource "aws_security_group_rule" "swarm-node-ingress-swarmports" {
+  description              = "Allow node discovery"
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = "${aws_security_group.swarm-node.id}"
-  source_security_group_id = "${aws_security_group.swarm-node.id}"
-  to_port                  = 8500
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "swarm-node-ingress-socket" {
-  description              = "Allow node to communicate with each other"
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "${aws_security_group.swarm-node.id}"
-  source_security_group_id = "${aws_security_group.swarm-node.id}"
-  to_port                  = 8546
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "swarm-node-ingress-discovery" {
-  description              = "Allow node to communicate with each other"
-  from_port                = 30300
-  protocol                 = "-1"
-  security_group_id        = "${aws_security_group.swarm-node.id}"
-  source_security_group_id = "${aws_security_group.swarm-node.id}"
+  cidr_blocks              = ["0.0.0.0/0"]
   to_port                  = 30399
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "swarm-node-ingress-comms" {
-  description              = "Allow node to communicate with each other"
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "${aws_security_group.swarm-node.id}"
-  source_security_group_id = "${aws_security_group.swarm-node.id}"
-  to_port                  = 3000
   type                     = "ingress"
 }
 

@@ -1,0 +1,6 @@
+apiVersion: v1
+appVersion: "v0.3.8"
+description: A Helm chart for Ethereum Swarm
+name: swarm
+version: 0.1.0
+icon: https://www.google.com/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwil_9HZl5niAhWWtp4KHSiGD2gQjRx6BAgBEAU&url=https%3A%2F%2Fswarm-guide.readthedocs.io%2Fen%2Flatest%2Fintroduction.html&psig=AOvVaw2Nt1DuEwbBRdldfODJ3RmN&ust=1557860214881074
